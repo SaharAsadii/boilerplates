@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "baseUrl": ".",
+    "noImplicitAny": true,
+
+    "paths": {
+      "src/*": ["src/*"],
+    },
+
+    "outDir": "./dist/src",
+    "rootDir": "./src",
+    "strict": true,
+    "sourceMap" :true,
+    "alwaysStrict": true,
+    "typeRoots": ["./types/global.d.ts","./types/node.d.ts", "./node_modules/@types/*"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "inlineSources": true,
+
+    // Set `sourceRoot` to  "/" to strip the build path prefix
+    // from generated source code references.
+    // This improves issue grouping in Sentry.
+    "sourceRoot": "/"
+  }
+}
