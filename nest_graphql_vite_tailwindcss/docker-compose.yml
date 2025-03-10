@@ -1,0 +1,35 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: event-management-database
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: event-management-api
+    ports:
+      - "9000:3000"
+    env_file: "./api/.env.production"
+    restart: always
+    depends_on:
+      - mongodb
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: event-management-app
+    ports:
+      - "4173:80"
+    restart: always
+    depends_on:
+      - api
+
+
+
+volumes:
+  mongodb_data:
