@@ -11,7 +11,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import hpp from "hpp";
 import { graphqlHTTP } from "express-graphql";
-import schema from "./schema";
+import schema from "./graphql-schema";
 import { root } from "./resolvers";
 import { createStream } from "rotating-file-stream";
 import path from "path";
@@ -22,7 +22,6 @@ import authRoutes from "./routes/user/auth.routes";
 import userRoutes from "./routes/user/user.routes";
 import { config } from "./utils/constants";
 import { morganLog } from "./utils/utility";
-import { events } from "./events";
 
 // creating log file -----------------------------------------------
 const accessLogStream = createStream("access.log", {
@@ -45,8 +44,6 @@ export const app: Express = express();
 dotenv.config();
 const PORT = config.NODE.PORT ?? 8000;
 
-
-
 app.use(
   morgan(":custom-token", {
     stream: accessLogStream,
@@ -64,9 +61,6 @@ app.use(
     }
   })
 );
-
-//adding events
-events(app);
 
 app.use(cors());
 
@@ -112,8 +106,6 @@ app.use(limiter);
 app.use(hpp());
 app.use(compression());
 
-
-
 // USER ROUTES ---------------------------------------------------
 app.use("/api/v2/user/auth", authRoutes);
 app.use("/api/v2/user/user", userRoutes);
@@ -130,7 +122,7 @@ app.use(
   graphqlHTTP({
     schema: schema,
     rootValue: root,
-    graphiql: true,
+    graphiql: true
   })
 );
 

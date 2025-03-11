@@ -2,6 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import * as yup from "yup";
 import { ErrorResponse } from "src/utils/error-response";
 
+export * from "./file.schema";
+export * from "./search-params.schema";
+export * from "./user/index";
+
 export const checkDeleteSubItemSchema = async (
   req: Request,
   _res: Response,
@@ -22,7 +26,3 @@ export const checkDeleteSubItemSchema = async (
     next(new ErrorResponse(error.errors.join(","), 400, "schema-error"));
   }
 };
-
-export * from "./file.schema";
-export * from "./search-params.schema";
-export * from "./user";

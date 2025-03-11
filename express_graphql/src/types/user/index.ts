@@ -20,7 +20,3 @@ export * from "./product-sell";
 export * from "./task.types";
 export * from "./counter";
 export * from "./log";
-export * from "./canceled-sell";
-export * from "./customer";
-export * from "./province-city";
-export * from "./clue";
