@@ -20,7 +20,7 @@ import {
   createUserSchema,
   protectSchema,
   updateUserSchema
-} from "src/schema";
+} from "src/schema/index";
 
 const router = express.Router();
 

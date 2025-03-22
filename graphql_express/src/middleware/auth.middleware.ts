@@ -4,8 +4,7 @@ import { USER_ROLES, UserDocument } from "src/types";
 import { ErrorResponse } from "src/utils/error-response";
 import { AUTH_ERROR_TYPES } from "src/utils/errors";
 import { asyncHandler } from "./async-handler.middleware";
-import { USER_ACCESS, config } from "src/utils/constants";
-import { getClueById, getTaskById } from "src/service";
+import { USER_ACCESS } from "src/utils/constants";
 
 export const protectUser = asyncHandler(
   async (
@@ -119,57 +118,6 @@ export const authorize =
     if (grant) return next();
     return next(new ErrorResponse(`${AUTH_ERROR_TYPES.AUTH_NOTAUTHORIZED}`));
   };
-
-export const authenticateInternalServerRequest = (
-  req: Request,
-  _res: Response,
-  next: NextFunction
-) => {
-  const hash = req.headers["x-asiatech-hash"];
-  if (hash && hash === config.INTERNAL_SERVER.INTERNAL_SERVER_HASH)
-    return next();
-  return next(new ErrorResponse(`${AUTH_ERROR_TYPES.AUTH_NOTAUTHORIZED}`));
-};
-
-export const hasAccessToTask = async (
-  req: Request & { user?: UserDocument },
-  _res: Response,
-  next: NextFunction
-) => {
-  const task = await getTaskById(req.params.id);
-
-  if (!task)
-    return next(new ErrorResponse(`${AUTH_ERROR_TYPES.AUTH_NOTAUTHORIZED}`));
-  else {
-    if (
-      req.user?.role === USER_ROLES.USER &&
-      !req.user?.access.includes(USER_ACCESS.TASKS) &&
-      task.userId.toString() !== req.user._id.toString() &&
-      task.assignedTo.toString() !== req.user._id.toString()
-    )
-      return next(new ErrorResponse(`${AUTH_ERROR_TYPES.AUTH_NOTAUTHORIZED}`));
-  }
-  next();
-};
-
-export const hasAccessToClue = async (
-  req: Request & { user?: UserDocument },
-  _res: Response,
-  next: NextFunction
-) => {
-  const task = await getClueById(req.params.id);
-
-  if (!task)
-    return next(new ErrorResponse(`${AUTH_ERROR_TYPES.AUTH_NOTAUTHORIZED}`));
-  else {
-    if (
-      req.user?.role === USER_ROLES.USER &&
-      !req.user?.access.includes(USER_ACCESS.CLUE)
-    )
-      return next(new ErrorResponse(`${AUTH_ERROR_TYPES.AUTH_NOTAUTHORIZED}`));
-  }
-  next();
-};
 
 export const hasAccessToCustomers = async (
   req: Request & { user?: UserDocument },

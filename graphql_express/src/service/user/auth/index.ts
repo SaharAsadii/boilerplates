@@ -3,7 +3,7 @@ import { asyncServiceHandler } from "src/middleware";
 import { LoginType, ChangePasswordType, UserDocument } from "src/types";
 import { ErrorResponse } from "src/utils/error-response";
 import { AUTH_ERROR_TYPES, DATABASE_ERROR_TYPES } from "src/utils/errors";
-import { sendSMSAPI, sendTokenResponse } from "src/utils/utility";
+import { sendTokenResponse } from "src/utils/utility";
 import {
   getUserById,
   getUserByMobileOrEmail,
@@ -50,12 +50,6 @@ export const forgetPasswordService = asyncServiceHandler(
 
     user.resetPasswordCodeExpire = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
-
-    // send sms code to user mobileNumber
-    user.mobileNumber &&
-      sendSMSAPI(`کد تغییر رمز عبور شما ${user.resetPasswordCode}`, [
-        user.mobileNumber
-      ]);
 
     return user;
   }
@@ -111,12 +105,6 @@ export const regenerateForgetPasswordCodeService = asyncServiceHandler(
     user.resetPasswordCode = user.generateRandomNumericCode();
     user.resetPasswordCodeExpire = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
-
-    // send sms code to user mobileNumber AND email (both)
-    user.mobileNumber &&
-      sendSMSAPI(`کد تغییر رمز عبور  ${user.resetPasswordCode}`, [
-        user.mobileNumber
-      ]);
 
     return user;
   }
