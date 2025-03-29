@@ -11,9 +11,12 @@
   },
   "dependencies": {
     "@apollo/client": "^3.13.5",
+    "axios": "^1.8.4",
     "graphql": "^16.10.0",
+    "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.4.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

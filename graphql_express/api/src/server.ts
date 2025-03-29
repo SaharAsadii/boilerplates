@@ -6,6 +6,7 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import typeDefs from "./graphql/schema";
 import resolvers from "./graphql/resolvers";
+import { authenticateUser, authMiddleware } from "./middlewares/auth";
 // import schema from "./graphql/schema";
 // Removed createHandler as it's not compatible with Express
 
@@ -31,12 +32,20 @@ const server = new ApolloServer({
 const startServer = async () => {
   // Start Apollo Server and apply middleware
   await server.start();
+
   app.use(
     "/graphql",
     cors(),
     express.json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({ token: req.headers.authorization }),
+      context: async ({ req }) => {
+        try {
+          const user = authenticateUser(req); // Use the reusable function
+          return { user };
+        } catch (error) {
+          return { user: null }; // Handle unauthenticated users
+        }
+      },
     }) as unknown as express.RequestHandler
   );
 };
