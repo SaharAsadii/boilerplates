@@ -13,6 +13,14 @@ const GET_TASKS = gql`
   }
 `;
 
+const GET_ME = gql`
+  query {
+    me {
+      fullName
+    }
+  }
+`;
+
 const ADD_TASK = gql`
   mutation addTask($title: String!) {
     addTask(title: $title) {
@@ -43,13 +51,14 @@ const COMPLETE_TASK = gql`
 function Task() {
   const [title, setTitle] = useState("");
   const { data, loading, error, refetch } = useQuery(GET_TASKS);
+  const { data: meInfo } = useQuery(GET_ME);
   const [addTask] = useMutation(ADD_TASK);
   const [deleteTask] = useMutation(DELETE_TASK);
   const [completeTask] = useMutation(COMPLETE_TASK);
 
   if (loading) return <p>Loading....</p>;
   if (error) return <p>{error.message}</p>;
-  console.log({ data });
+  console.log({ data, meInfo });
 
   const handleAddTask = async () => {
     await addTask({ variables: { title } });

@@ -12,7 +12,8 @@ const resolvers = {
     getTasks: async () => {
       return await task.find();
     },
-    me: async ({ user }: { user: { id: string } }) => {
+    me: async (_: any, __: any, { user }: { user: { id: string } | null }) => {
+      console.log({ user });
       if (!user) {
         throw new Error("Not authenticated");
       }

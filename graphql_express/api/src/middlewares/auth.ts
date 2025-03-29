@@ -1,35 +1,38 @@
+import jwt from "jsonwebtoken";
 import { verifyAccessToken } from "../utility/auth";
+import user from "../models/user";
 
-export const authenticateUser = (req: any) => {
-  const token = req.headers["authorization"]?.split(" ")[1];
-  console.log("token", token);
-
-  // Skip token validation for login and register routes
-  if (req.path === "/login" || req.path === "/register") {
-    return null;
-  }
-
-  if (!token) {
-    throw new Error("Unauthorized");
-  }
-
+export const authMiddleware = async (req: any, res: any) => {
   try {
-    const user = verifyAccessToken(token);
-    return user;
+    const user = await authenticateUser(req);
+    console.log({ user });
+
+    return {
+      user: user ? { id: (user as unknown as { _id: string })._id } : null,
+    };
   } catch (error) {
-    throw new Error("Forbidden");
+    return { user: null };
   }
 };
 
-export const authMiddleware = (req: any, res: any, next: any) => {
-  try {
-    const user = authenticateUser(req);
-    req.user = user;
-    next();
-  } catch (error: any) {
-    if (error.message === "Unauthorized") {
-      return res.status(401).json({ message: "Unauthorized" });
+export const authenticateUser = async (req: any) => {
+  let euser = null;
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    try {
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+      console.log({ decoded });
+      euser = await user
+        .findById((decoded as { userId: string }).userId)
+        .select("-password");
+
+      return euser;
+    } catch (error) {
+      console.error("Invalid token:", error);
     }
-    return res.status(403).json({ message: "Forbidden" });
   }
+
+  return { user };
 };

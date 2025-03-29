@@ -6,9 +6,7 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import typeDefs from "./graphql/schema";
 import resolvers from "./graphql/resolvers";
-import { authenticateUser, authMiddleware } from "./middlewares/auth";
-// import schema from "./graphql/schema";
-// Removed createHandler as it's not compatible with Express
+import { authMiddleware } from "./middlewares/auth";
 
 dotenv.config();
 
@@ -23,14 +21,12 @@ mongoose
 
 const app = express();
 
-// Create Apollo Server instance
 const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
 const startServer = async () => {
-  // Start Apollo Server and apply middleware
   await server.start();
 
   app.use(
@@ -38,18 +34,11 @@ const startServer = async () => {
     cors(),
     express.json(),
     expressMiddleware(server, {
-      context: async ({ req }) => {
-        try {
-          const user = authenticateUser(req); // Use the reusable function
-          return { user };
-        } catch (error) {
-          return { user: null }; // Handle unauthenticated users
-        }
-      },
+      context: ({ req, res }) => authMiddleware(req, res),
     }) as unknown as express.RequestHandler
   );
 };
-// Start the server at port
+
 app.listen(5000);
 console.log("Running a GraphQL API server at http://localhost:5000/graphql");
 
