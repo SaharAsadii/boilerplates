@@ -11,22 +11,19 @@ const typeDefs = gql`
     getTasks: [Task!]!
     me: User
   }
-
   type User {
     id: ID!
-    username: String!
+    name: String!
     email: String!
-    fullName: String!
-    password: String!
+    token: String
   }
 
   type Mutation {
     addTask(title: String!): Task!
     completeTask(id: ID!): Task!
     deleteTask(id: ID!): Task!
-    login(username: String!, password: String!): String!
-    register(username: String!, password: String!): String!
-    logout: Boolean!
+    register(name: String!, email: String!, password: String!): User
+    login(email: String!, password: String!): User
   }
 `;
 

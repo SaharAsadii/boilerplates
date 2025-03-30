@@ -1,7 +1,16 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getItems, createItem, deleteItem } from "./api";
+import { AuthContext } from "./context/auth-context";
 
 function App() {
+  const authContext = useContext(AuthContext);
+
+  if (!authContext) {
+    throw new Error("AuthContext is not provided");
+  }
+
+  const { user, logout } = authContext;
+  console.log({ user });
   const [items, setItems] = useState<
     { name: ""; description: ""; _id: string }[]
   >([]);

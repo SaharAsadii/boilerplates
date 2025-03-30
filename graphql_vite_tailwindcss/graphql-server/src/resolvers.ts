@@ -1,3 +1,5 @@
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import task from "./models/task";
 import User from "./models/user";
 
@@ -6,10 +8,14 @@ const resolvers = {
     getTasks: async () => {
       return await task.find();
     },
-    me: (parent, args, contextValue) => {
-      if (!contextValue.user) return null;
+    // me: (parent, args, contextValue) => {
+    //   if (!contextValue.user) return null;
 
-      return contextValue.user;
+    //   return contextValue.user;
+    // },
+    me: async (_: any, __: any, { userId }: { userId: string }) => {
+      if (!userId) throw new Error("Not authenticated");
+      return await User.findById(userId);
     },
   },
 
@@ -36,69 +42,33 @@ const resolvers = {
     register: async (
       _: any,
       {
-        username,
-        fullName,
+        name,
+        email,
         password,
-      }: { fullName: string; username: string; password: string }
+      }: { name: string; email: string; password: string }
     ) => {
-      const existingUser = await User.findOne({ username });
-      console.log({ username, fullName, password });
-      if (await existingUser) {
-        throw new Error("Username already exists");
-      }
-
+      const existingUser = await User.findOne({ email });
+      if (existingUser) throw new Error("User already exists");
       const hashedPassword = await bcrypt.hash(password, 10);
-
-      const newUser = {
-        fullName,
-        username,
-        password: hashedPassword,
-      };
-      await User.create(newUser);
-      return {
-        token: generateAccessToken(newUser),
-        refreshToken: generateRefreshToken(newUser),
-      };
+      const user = new User({ name, email, password: hashedPassword });
+      await user.save();
+      const token = jwt.sign({ userId: user.id }, "SECRET_KEY", {
+        expiresIn: "1d",
+      });
+      return { id: user.id, name, email, token };
     },
     login: async (
       _: any,
-      { username, password }: { username: string; password: string }
+      { email, password }: { email: string; password: string }
     ) => {
-      console.log({ username, password });
-      const existingUser = await User.findOne({ username });
-      if (!existingUser) {
-        throw new Error("User not found");
-      }
-      const isPasswordValid = await bcrypt.compare(
-        password,
-        existingUser.password
-      );
-      if (!isPasswordValid) {
-        throw new Error("Invalid password");
-      }
-      return {
-        token: generateAccessToken(existingUser),
-        refreshToken: generateRefreshToken(existingUser),
-      };
-    },
-
-    refreshToken: async (_: any, { token }: { token: string }) => {
-      try {
-        const userData = verifyRefreshToken(token);
-        if (typeof userData !== "object" || !("userId" in userData)) {
-          throw new Error("Invalid token payload");
-        }
-        const existingUser = await User.findById(userData.userId);
-        if (!existingUser) {
-          throw new Error("User not found");
-        }
-        return {
-          token: generateAccessToken(existingUser),
-          refreshToken: generateRefreshToken(existingUser),
-        };
-      } catch (error) {
-        throw new Error("Invalid refresh token");
-      }
+      const user = await User.findOne({ email });
+      if (!user) throw new Error("Invalid credentials");
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) throw new Error("Invalid credentials");
+      const token = jwt.sign({ userId: user.id }, "SECRET_KEY", {
+        expiresIn: "1d",
+      });
+      return { id: user.id, name: user.name, email, token };
     },
   },
 };
